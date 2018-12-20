@@ -28,7 +28,9 @@ public class TopicProducer {
         TopicSession topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
         topicConnection.start();
         TopicProducer topicProducer = new TopicProducer();
-        topicProducer.sendMessage("message from adde", topicSession, topic);
+        for(int i = 0; i < 5; i++) {
+            topicProducer.sendMessage("message from adde", topicSession, topic);
+        }
         
     }
     

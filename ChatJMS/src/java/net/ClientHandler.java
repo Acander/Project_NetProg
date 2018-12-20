@@ -28,36 +28,45 @@ public class ClientHandler {
     
     private Conversation conversation = new Conversation();
     JMSContext jmsContext;
-    JMSConsumer jmsConsumer;
+    JMSConsumer jmsPrimaryConsumer;
+    JMSConsumer jmsSecondaryConsumer;
     JMSProducer jmsProducer;
-    Queue queue;
+    Queue clientQueue;
+    Queue msgQueue;
+    Queue confirmQueue;
     
-    public ClientHandler(ConnectionFactory connectionFactory, Queue queue) {
+    public ClientHandler(ConnectionFactory connectionFactory, Queue clientQueue, Queue msgQueue, Queue confirmQueue) {
         jmsContext = connectionFactory.createContext();
-        jmsConsumer = jmsContext.createConsumer(queue);
+        jmsPrimaryConsumer = jmsContext.createConsumer(clientQueue);
+        jmsSecondaryConsumer = jmsContext.createConsumer(confirmQueue);
         jmsProducer = jmsContext.createProducer();
-        this.queue = queue;
+        this.clientQueue = clientQueue;
+        this.msgQueue = msgQueue;
+        this.confirmQueue = confirmQueue;
     }
     
     public void storeMsg(String msg) {
         conversation.storeMsg(msg);
     }
     
-    public void startClientHandler() {
+    public void startClientHandler() throws InterruptedException {
         listenForNewUsers();
     }
     
-    private void listenForNewUsers() {
+    private void listenForNewUsers() throws InterruptedException {
         while (true) {
-            String message = jmsConsumer.receiveBody(String.class);
+            String message = jmsPrimaryConsumer.receiveBody(String.class);
             System.out.println(message);
             if (message.equals("###")) {
                 System.out.println(message);
                 List<String> messages = conversation.getMessages();
                 for (int i = 0; i < messages.size(); i++) {
                     System.out.println("Sending: " + messages.get(i));
-                    jmsProducer.send((Destination) queue, messages.get(i));
+                    jmsProducer.send((Destination) msgQueue, messages.get(i));
                 }
+                jmsProducer.send((Destination) msgQueue, "done");
+                jmsSecondaryConsumer.receiveBody(String.class);
+                
             }
             
         }

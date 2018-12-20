@@ -8,7 +8,7 @@ import java.util.List;
  * @author adria
  */
 public class Conversation {
-    List<String> conversation = new ArrayList<>();
+    volatile List<String> conversation = new ArrayList<>();
     
     
     public List<String> getMessages() {

@@ -18,7 +18,10 @@ public class Main {
     private static ConnectionFactory connectionFactory;
     
     @Resource(mappedName = "jms/chatQueue")
-    private static Queue queue;
+    private static Queue clientQueue;
+    
+    @Resource(mappedName = "jms/sendQueue")
+    private static Queue msgQueue;
     
     @Resource(mappedName = "jms/chatTopicConnectionFactory")
     private static TopicConnectionFactory topicConnectionFactory;
@@ -26,8 +29,8 @@ public class Main {
     @Resource(mappedName = "jsm/chatTopic")
     private static Topic topic;
     
-    public static void main(String[] args) throws JMSException {
-        ClientHandler clientHandler = new ClientHandler(connectionFactory, queue);
+    public static void main(String[] args) throws JMSException, InterruptedException {
+        ClientHandler clientHandler = new ClientHandler(connectionFactory, clientQueue, msgQueue);
         new ChatRecorder(clientHandler, topicConnectionFactory, topic);
         clientHandler.startClientHandler();
     }
