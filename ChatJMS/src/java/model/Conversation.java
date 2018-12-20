@@ -10,6 +10,7 @@ import java.util.List;
 public class Conversation {
     List<String> conversation = new ArrayList<>();
     
+    
     public List<String> getMessages() {
         return conversation;
     }

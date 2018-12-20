@@ -8,6 +8,7 @@ package net;
 import javax.annotation.Resource;
 import model.Conversation;
 import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
@@ -29,6 +30,10 @@ public class ClientHandler {
     JMSConsumer jmsConsumer = jmsContext.createConsumer(queue);
     JMSProducer jmsProducer = jmsContext.createProducer();
     
+    public void storeMsg(String msg) {
+        conversation.storeMsg(msg);
+    }
+    
     public void startClientHandler() {
         listenForNewUsers();
     }
@@ -36,10 +41,14 @@ public class ClientHandler {
     private void listenForNewUsers() {
         while (true) {
             String message = jmsConsumer.receiveBody(String.class);
-            System.out.println(message);
-            for(String nextMsg : conversation.getMessages) {
-                
+            if (message.equals("###")) {
+                System.out.println(message);
+                for (String msg : conversation.getMessages()) {
+                    jmsProducer.send((Destination) queue, message);
+                }
             }
+            
         }
     }
+    
 }

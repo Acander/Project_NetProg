@@ -33,6 +33,10 @@ public class Main {
         System.out.println("Welcomde to chat, please enter username");
         String username = scan.nextLine();
         
+        String s = "Felix";
+        test(s);
+        System.out.println(s);
+        
         while(true) {
             String message = scan.nextLine();
             System.out.print("say: ");
@@ -43,6 +47,10 @@ public class Main {
         }
         jmsProducer.send((Destination) queue, "User "+ username +" disconnected from chat");
         System.out.println("Message Send Sucessfull");
+    }
+    
+    private static void test(String s) {
+        s = "adde";
     }
     
 }
