@@ -19,16 +19,23 @@ import javax.jms.Queue;
  * @author adria
  */
 public class ClientHandler {
-    @Resource(mappedName = "jms/chatConnectionFactory")
+    /*@Resource(mappedName = "jms/chatConnectionFactory")
     private static ConnectionFactory connectionFactory;
     
     @Resource(mappedName = "jms/chatQueue")
-    private static Queue queue;
+    private static Queue queue;*/
     
     private Conversation conversation = new Conversation();
-    JMSContext jmsContext = connectionFactory.createContext();
-    JMSConsumer jmsConsumer = jmsContext.createConsumer(queue);
-    JMSProducer jmsProducer = jmsContext.createProducer();
+    JMSContext jmsContext;
+    JMSConsumer jmsConsumer;
+    JMSProducer jmsProducer;
+    Queue queue;
+    
+    public ClientHandler(ConnectionFactory connectionFactory, Queue queue) {
+        jmsContext = connectionFactory.createContext();
+        jmsConsumer = jmsContext.createConsumer(queue);
+        jmsProducer = jmsContext.createProducer();
+    }
     
     public void storeMsg(String msg) {
         conversation.storeMsg(msg);

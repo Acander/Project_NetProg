@@ -17,19 +17,21 @@ import javax.jms.TopicSession;
  * @author adria
  */
 public class ChatRecorder implements MessageListener {
-    @Resource(mappedName = "jms/chatTopicConnectionFactory")
+    /*@Resource(mappedName = "jms/chatTopicConnectionFactory")
     private TopicConnectionFactory topicConnectionFactory;
     
-    @Resource(mappedName = "jms/chatTopic")
-    private Topic topic;
+    @Resource(mappedName = "jsm/chatTopic")
+    private Topic topic;*/
     
-    private JMSContext jmsContext;
+    //private JMSContext jmsContext;
     private ClientHandler clientHandler;
+    //private final Topic topic;
+    //private final TopicConnectionFactory topicConnectionFactory;
     
-    public ChatRecorder(ClientHandler clientHandler) throws JMSException {
+    public ChatRecorder(ClientHandler clientHandler, TopicConnectionFactory tcf, Topic topic) throws JMSException {
         this.clientHandler = clientHandler;
-        getInitialContext();
-        TopicConnection topicConnection = topicConnectionFactory.createTopicConnection();
+        //jmsContext = tcf.createContext();
+        TopicConnection topicConnection = tcf.createTopicConnection();
         TopicSession topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
         topicSession.createSubscriber(topic).setMessageListener(this);
         topicConnection.start();
@@ -52,9 +54,9 @@ public class ChatRecorder implements MessageListener {
         }
     }
     
-    private void getInitialContext() {
+    /*private void getInitialContext() {
         jmsContext = topicConnectionFactory.createContext();
-    }
+    }*/
     
     
     
