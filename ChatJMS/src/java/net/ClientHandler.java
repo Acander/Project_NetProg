@@ -5,6 +5,7 @@
  */
 package net;
 
+import java.util.List;
 import javax.annotation.Resource;
 import model.Conversation;
 import javax.jms.ConnectionFactory;
@@ -35,6 +36,7 @@ public class ClientHandler {
         jmsContext = connectionFactory.createContext();
         jmsConsumer = jmsContext.createConsumer(queue);
         jmsProducer = jmsContext.createProducer();
+        this.queue = queue;
     }
     
     public void storeMsg(String msg) {
@@ -48,10 +50,13 @@ public class ClientHandler {
     private void listenForNewUsers() {
         while (true) {
             String message = jmsConsumer.receiveBody(String.class);
+            System.out.println(message);
             if (message.equals("###")) {
                 System.out.println(message);
-                for (String msg : conversation.getMessages()) {
-                    jmsProducer.send((Destination) queue, message);
+                List<String> messages = conversation.getMessages();
+                for (int i = 0; i < messages.size(); i++) {
+                    System.out.println("Sending: " + messages.get(i));
+                    jmsProducer.send((Destination) queue, messages.get(i));
                 }
             }
             

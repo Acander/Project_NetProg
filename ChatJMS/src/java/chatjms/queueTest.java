@@ -1,10 +1,13 @@
 package chatjms;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.jms.Queue;
 import java.util.Scanner;
 import javax.annotation.Resource;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 
@@ -12,7 +15,7 @@ import javax.jms.JMSProducer;
  *
  * @author adria
  */
-public class Main {
+public class queueTest {
 
     @Resource(mappedName = "jms/chatConnectionFactory")
     private static ConnectionFactory connectionFactory;
@@ -28,6 +31,8 @@ public class Main {
     public static void main(String[] args) {
         JMSContext jmsContext = connectionFactory.createContext();
         JMSProducer jmsProducer = jmsContext.createProducer();
+        JMSConsumer jmsConsumer;
+        jmsConsumer = jmsContext.createConsumer(queue);
         
         System.out.println("Sending message to JMS - ");
         System.out.println("Welcomde to chat, please enter username");
@@ -39,7 +44,12 @@ public class Main {
             if(message.equals("break")) {
                 break;
             }
-            jmsProducer.send((Destination) queue, username+": "+message);
+            jmsProducer.send((Destination) queue, message);
+           while(true) {
+                String msg = jmsConsumer.receiveBody(String.class);
+                String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+                System.out.println(timeStamp+", "+msg);
+            }
         }
         jmsProducer.send((Destination) queue, "User "+ username +" disconnected from chat");
         System.out.println("Message Send Sucessfull");
