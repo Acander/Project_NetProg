@@ -9,7 +9,9 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
+import javax.jms.JMSException;
 import javax.jms.JMSProducer;
+import javax.jms.TemporaryQueue;
 
 /**
  *
@@ -34,35 +36,37 @@ public class queueTest {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JMSException {
         JMSContext jmsContext = connectionFactory.createContext();
-        JMSProducer jmsProducer = jmsContext.createProducer();
         JMSConsumer jmsConsumer;
-        jmsConsumer = jmsContext.createConsumer(msgQueue);
+        //jmsConsumer = jmsContext.createConsumer(msgQueue);
+        //JMSProducer jmsProducer = jmsContext.createProducer().setJMSReplyTo(queue);
+        //jmsConsumer = jmsContext.createConsumer(queue);
         
         System.out.println("Sending message to JMS - ");
-        System.out.println("Welcomde to chat, please enter username");
-        String username = scan.nextLine();
         
         while(true) {
+            TemporaryQueue queue = jmsContext.createTemporaryQueue();
+            JMSProducer jmsProducer = jmsContext.createProducer().setJMSReplyTo(queue);
+            jmsConsumer = jmsContext.createConsumer(queue);
             String message = scan.nextLine();
-            System.out.print("say: ");
             if(message.equals("break")) {
                 break;
             }
             jmsProducer.send((Destination) clientQueue, message);
-           while(true) {
+            while(true) {
                 String msg = jmsConsumer.receiveBody(String.class);
-                if(msg.equals("break")) {
-                    jmsProducer.send((Destination) confirmQueue, "done");
+                if(msg.equals("done")) {
+                    //jmsProducer.send((Destination) confirmQueue, "done");;
+                    System.out.println("All messages collected!");
                     break;
                 }
                 String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
                 System.out.println(timeStamp+", "+msg);
             }
         }
-        jmsProducer.send((Destination) clientQueue, "User "+ username +" disconnected from chat");
-        System.out.println("Message Send Sucessfull");
+        //jmsProducer.send((Destination) clientQueue, "User "+ username +" disconnected from chat");
+        //System.out.println("Message Send Sucessfull");
     }
     
 }
