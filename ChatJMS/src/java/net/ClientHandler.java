@@ -64,7 +64,7 @@ public class ClientHandler {
                     System.out.println("Sending: " + messages.get(i));
                     jmsProducer.send((Destination) msgQueue, messages.get(i));
                 }
-                jmsProducer.send((Destination) msgQueue, "done");
+                jmsProducer.send((Destination) msgQueue, "break");
                 jmsSecondaryConsumer.receiveBody(String.class);
                 
             }
