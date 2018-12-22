@@ -24,8 +24,6 @@ public class ChatConnection {
     public static ConnectionFactory connectionFactory;
     public static TopicConnectionFactory tcf;
     public static Queue clientQueue;
-    /*public static Queue queue2;
-    public static Queue queue3;*/
     public static Topic topic;
 
     /**
@@ -39,14 +37,13 @@ public class ChatConnection {
         JMSProducer jmsProducer = jmsContext.createProducer().setJMSReplyTo(queue);
         JMSConsumer jmsConsumer = jmsContext.createConsumer(queue);
         jmsProducer.send((Destination) clientQueue, "###");
+        
         while (true) {
             String msg = jmsConsumer.receiveBody(String.class);
             if (msg.equals("done")) {
-                //jmsProducer.send((Destination) confirmQueue, "done");;
                 System.out.println("All messages collected!");
                 break;
             }
-            String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
             outputHandler.handleMessage(msg);
         }
         startListener(outputHandler);
@@ -62,20 +59,19 @@ public class ChatConnection {
         new Listener(outputHandler);
     }
 
-    @SuppressWarnings("InfiniteLoopStatement")
     private class Listener implements MessageListener {
 
         private final OutputHandler outputHandler;
 
         public Listener(OutputHandler outputHandler) throws JMSException {
             this.outputHandler = outputHandler;
+            initializeTopicListener();
+        }
+        
+        private void initializeTopicListener() throws JMSException{
             TopicConnection topicConnection = tcf.createTopicConnection();
             TopicSession topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
-            try {
-                topicSession.createSubscriber(topic).setMessageListener(this);
-            } catch (JMSException ex) {
-                Logger.getLogger(ChatConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            topicSession.createSubscriber(topic).setMessageListener(this);
             topicConnection.start();
         }
 
@@ -84,7 +80,7 @@ public class ChatConnection {
             try {
                 outputHandler.handleMessage(message.getBody(String.class));
             } catch (JMSException ex) {
-                System.out.println("No message in chat connection");
+                outputHandler.noMessageError();
             }
         }
     }

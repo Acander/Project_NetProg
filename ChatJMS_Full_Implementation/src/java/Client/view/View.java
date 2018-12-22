@@ -21,36 +21,44 @@ public class View {
         public void run(){
             Scanner scan = new Scanner(System.in);
             try{
-                System.out.println("Welcome to the chat application! Please enter your username");
-                username = scan.nextLine();
-                System.out.println("Nice to see you "+username+", to leave chat type: QUIT, to join chat type JOIN");
-                //controller.startListener(new ConsoleOutput());
-                if(scan.nextLine().equals("JOIN")){
-                    System.out.println("joining chat...");
-                    controller.joinChat(new ConsoleOutput());
-                    String message;
-                    while (true) {
-                    //System.out.print("Say: ");
-                        if ((message = scan.nextLine()) != null) {
-                            if(message.equals("QUIT")){
-                                controller.sendMessage("User "+username+" disconnected from chat");
-                                break;
+                while(true) {
+                    System.out.println("Welcome to the chat application! Please enter your username");
+                    username = scan.nextLine();
+                    System.out.println("Nice to see you "+username+", to leave chat type: QUIT, to join chat type JOIN");
+                    if(scan.nextLine().equals("JOIN")){
+                        System.out.println("joining chat...");
+                        controller.joinChat(new ConsoleOutput());
+                        String message;
+                        while (true) {
+                            if ((message = scan.nextLine()) != null) {
+                                if(message.equals("QUIT")){
+                                    controller.sendMessage("User "+username+" disconnected from chat");
+                                    break;
+                                }
+                                controller.sendMessage(username+": "+message);
                             }
-                            controller.sendMessage(username+": "+message);
                         }
-                    }
                 }
+               }
             }catch (Exception e){
-                e.printStackTrace();
+                //e.printStackTrace();
+                System.out.println("Failed to connect. Please try again in a moment.");
             }
         }
     }
      
      private class ConsoleOutput implements OutputHandler{
          
-         @Override
+        private final String NO_MESSAGE_ERROR = "A message could not be received";
+         
+        @Override
         public void handleMessage(String msg){
-               System.out.println(msg);
+                System.out.println(msg);
+        }
+
+        @Override
+        public void noMessageError() {
+            System.out.println(NO_MESSAGE_ERROR);
         }
     }
 }

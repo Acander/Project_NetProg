@@ -14,24 +14,23 @@ import javax.jms.TopicSession;
  * @author adria
  */
 public class ChatRecorder implements MessageListener {
-    /*@Resource(mappedName = "jms/chatTopicConnectionFactory")
-    private TopicConnectionFactory topicConnectionFactory;
     
-    @Resource(mappedName = "jsm/chatTopic")
-    private Topic topic;*/
-    
-    //private JMSContext jmsContext;
     private ClientHandler clientHandler;
-    //private final Topic topic;
-    //private final TopicConnectionFactory topicConnectionFactory;
     
-    public ChatRecorder(ClientHandler clientHandler, TopicConnectionFactory tcf, Topic topic) throws JMSException {
+    public ChatRecorder(ClientHandler clientHandler, TopicConnectionFactory tcf, Topic topic) throws FailedToInitializeChatRecorderException {
         this.clientHandler = clientHandler;
-        //jmsContext = tcf.createContext();
-        TopicConnection topicConnection = tcf.createTopicConnection();
-        TopicSession topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
-        topicSession.createSubscriber(topic).setMessageListener(this);
-        topicConnection.start();
+        initializeTopicListener(tcf, topic);
+    }
+    
+    private void initializeTopicListener(TopicConnectionFactory tcf, Topic topic) throws FailedToInitializeChatRecorderException {
+        try {
+            TopicConnection topicConnection = tcf.createTopicConnection();
+            TopicSession topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
+            topicSession.createSubscriber(topic).setMessageListener(this);
+            topicConnection.start();
+        } catch (JMSException jmse) {
+            throw new FailedToInitializeChatRecorderException(jmse);
+        }
     }
 
     /**
@@ -50,11 +49,4 @@ public class ChatRecorder implements MessageListener {
             ex.getMessage();
         }
     }
-    
-    /*private void getInitialContext() {
-        jmsContext = topicConnectionFactory.createContext();
-    }*/
-    
-    
-    
 }
