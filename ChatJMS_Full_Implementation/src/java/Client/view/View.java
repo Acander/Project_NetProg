@@ -11,7 +11,13 @@ public class View {
     
     private Controller controller = new Controller();
     private String username;
-  
+    
+    private final String CMD_JOIN = "JOIN";
+    private final String CMD_QUIT = "QUIT";  
+    private final String CMD_LEAVE = "LEAVE";
+    
+    private boolean chatting = false;
+    
     public void startUp(){
         InputReader inputReader = new InputReader();
         inputReader.start();
@@ -21,31 +27,72 @@ public class View {
         public void run(){
             Scanner scan = new Scanner(System.in);
             try{
-                while(true) {
-                    System.out.println("Welcome to the chat application! Please enter your username");
-                    username = scan.nextLine();
-                    System.out.println("Nice to see you "+username+", to leave chat type: QUIT, to join chat type JOIN");
-                    if(scan.nextLine().equals("JOIN")){
-                        System.out.println("joining chat...");
-                        controller.joinChat(new ConsoleOutput());
-                        String message;
-                        while (true) {
-                            if ((message = scan.nextLine()) != null) {
-                                if(message.equals("QUIT")){
-                                    controller.sendMessage("User "+username+" disconnected from chat");
-                                    break;
+                    
+                    while(true) {
+                        userRegistration(scan);
+                        
+                        String input = scan.nextLine();
+                        
+                        if(input.equals(CMD_JOIN)){
+                            System.out.println("joining chat...");
+                            controller.joinChat(new ConsoleOutput());
+                            
+                            String message;
+                            while (true) {
+                                message = scan.nextLine();
+                                if (msgNotNull(message)) {
+                                    
+                                    if(message.equals(CMD_LEAVE)){
+                                        if(chatting) {
+                                            announceLeaving();
+                                            controller.terminateParticipation();
+                                        }
+                                        break;
+                                    }
+                                    else if(message.equals(CMD_QUIT)) {
+                                        announceLeaving();
+                                        quit();
+                                    }
+                                    else {
+                                        if (chatting) {
+                                            controller.sendMessage(username+": "+message);
+                                        } else {
+                                            System.err.println("Failed to send message. Please try again");
+                                        }
+                                    }
                                 }
-                                controller.sendMessage(username+": "+message);
                             }
+                        } else if (input.equals(CMD_QUIT)) {
+                            quit();
+                        } else {
+                            System.err.println("Invalid input!");
                         }
-                }
-               }
+                    }
             }catch (Exception e){
                 //e.printStackTrace();
                 System.out.println("Failed to connect. Please try again in a moment.");
             }
         }
     }
+   
+   private void announceLeaving() {
+       controller.sendMessage("User "+username+" disconnected from chat");
+   }
+   
+   private void userRegistration(Scanner scan) {
+       System.out.println("Welcome to the chat application! Please enter your username");
+       username = scan.nextLine();
+       System.out.println("Nice to see you "+username+", to leave chat type: QUIT, to join chat type JOIN");
+   }
+   
+   private boolean msgNotNull(String msg) {
+       return msg != null;
+   }
+   
+   private void quit() {
+       System.out.println("Quting program...");
+       System.exit(1);
+   }
      
      private class ConsoleOutput implements OutputHandler{
          
@@ -58,7 +105,17 @@ public class View {
 
         @Override
         public void noMessageError() {
-            System.out.println(NO_MESSAGE_ERROR);
+            System.err.println(NO_MESSAGE_ERROR);
+        }
+        
+        @Override
+        public void reportMessageSendingFailure(String report){
+            System.err.println(report);
+        }
+        
+        @Override
+        public void connectionMessage(){
+            chatting = true;
         }
     }
 }

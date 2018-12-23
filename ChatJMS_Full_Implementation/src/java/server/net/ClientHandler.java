@@ -51,6 +51,7 @@ public class ClientHandler {
                 Queue msgQueue = getClientPrivateQueue(msg);
                 System.out.println("Message caught " + msg.getBody(String.class));
                 sendAllEntriesToClient(msgQueue);
+                
             }
         }
     }

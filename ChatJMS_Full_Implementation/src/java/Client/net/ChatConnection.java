@@ -1,9 +1,5 @@
 package Client.net;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
@@ -25,6 +21,8 @@ public class ChatConnection {
     public static TopicConnectionFactory tcf;
     public static Queue clientQueue;
     public static Topic topic;
+    
+    private Listener listener;
 
     /**
      * This method is responsible for starting the listener and joining the chat
@@ -46,6 +44,7 @@ public class ChatConnection {
             }
             outputHandler.handleMessage(msg);
         }
+        closeContext(jmsContext);
         startListener(outputHandler);
     }
 
@@ -53,26 +52,44 @@ public class ChatConnection {
         JMSContext jmsContext = connectionFactory.createContext();
         JMSProducer jmsProducer = jmsContext.createProducer();
         jmsProducer.send(topic, message);
+        closeContext(jmsContext);
+    }
+    
+    private void closeContext(JMSContext jmsContext) {
+        jmsContext.close();
     }
 
     private void startListener(OutputHandler outputHandler) throws JMSException {
-        new Listener(outputHandler);
+        listener = new Listener(outputHandler);
+    }
+    
+    public void closeConnection() throws JMSException {
+        listener.stopTopicListener();
     }
 
     private class Listener implements MessageListener {
 
         private final OutputHandler outputHandler;
+        
+        private TopicConnection topicConnection;
+        private TopicSession topicSession;
 
         public Listener(OutputHandler outputHandler) throws JMSException {
             this.outputHandler = outputHandler;
             initializeTopicListener();
+            outputHandler.connectionMessage();
         }
         
         private void initializeTopicListener() throws JMSException{
-            TopicConnection topicConnection = tcf.createTopicConnection();
-            TopicSession topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
+            topicConnection = tcf.createTopicConnection();
+            topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
             topicSession.createSubscriber(topic).setMessageListener(this);
             topicConnection.start();
+        }
+        
+        public void stopTopicListener() throws JMSException {
+            topicSession.close();
+            topicConnection.close();
         }
 
         @Override

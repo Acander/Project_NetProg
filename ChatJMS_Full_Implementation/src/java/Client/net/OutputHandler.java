@@ -12,4 +12,8 @@ public interface OutputHandler {
      * Handles the situation where a message can not be handled properly.
      */
     void noMessageError();
+    
+    public void reportMessageSendingFailure(String report);
+    
+    public void connectionMessage();
 }

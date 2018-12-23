@@ -24,7 +24,11 @@ public class Controller {
            CompletableFuture.runAsync(() -> {
                  chatConnection.sendMessage(message);
          });
-    }
+        }
+        
+        public void terminateParticipation() throws JMSException {
+            chatConnection.closeConnection();
+        }
 
 }
         
