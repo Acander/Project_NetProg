@@ -7,11 +7,11 @@ public class Conversation {
     volatile List<String> conversation = new ArrayList<>();
     
     
-    public List<String> getMessages() {
+    public synchronized List<String> getMessages() {
         return conversation;
     }
     
-    public void storeMsg(String msg) {
+    public synchronized void storeMsg(String msg) {
         conversation.add(msg);
     }
 }
